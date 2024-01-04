@@ -11,7 +11,8 @@ with engine.begin() as conn:
     )
 
 with engine.begin() as conn:
-    results = conn.execute(text("select * from coordinates"))
+    # results = conn.execute(text("select * from coordinates"))
+    results = conn.execute(text("select * from coordinates where y = :y"), {"y": 2})
     for row in results: 
         print("x = ", row.x, "y = ", row.y)
         
