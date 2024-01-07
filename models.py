@@ -1,6 +1,5 @@
 from datetime import date
 from typing import List
-from sqlalchemy import create_engine
 from sqlalchemy import Table
 from sqlalchemy import Column
 from sqlalchemy import String
@@ -12,8 +11,6 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-import settings
-
 
 class Base(DeclarativeBase):
     pass
@@ -24,6 +21,7 @@ class SocialMedia(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     url: Mapped[str]
+    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
     artist: Mapped["Artist"] = relationship(back_populates="socialmedia")
 
 class Gender(Base):
@@ -39,6 +37,7 @@ class Artist(Base):
     id_artist: Mapped[int] = mapped_column(primary_key=True)
     full_name: Mapped[str]
     stage_name: Mapped[str]
+    gender_id: Mapped[int] = mapped_column(ForeignKey("gender.id_gender"))
     gender: Mapped[Gender] = relationship(back_populates="artists")
     email_address: Mapped[str | None]
     phone: Mapped[str | None]
@@ -59,6 +58,7 @@ class Genre(Base):
 
     id_genre: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
+    songs: Mapped[List["Song"] | None] = relationship(back_populates="genre")
 
 class SongType(Base):
     __tablename__ = "songtype"
@@ -74,14 +74,20 @@ class Song(Base):
     artist: Mapped[Artist]  = relationship(back_populates="songs")
     title: Mapped[str] = mapped_column(String(255))
     release_date: Mapped[date | None] = mapped_column(Date)
+    album_id: Mapped[int] = mapped_column(ForeignKey("album.id_album"))
     album: Mapped[Album | None] = relationship(back_populates="songs")
+    songtype_id: Mapped[int] = mapped_column(ForeignKey("songtype.id_song_type"))
     songtype: Mapped[SongType| None] = relationship(back_populates="songs")
+    collaboration: Mapped["Collaboration"] = relationship(back_populates="song")
+    genre_id: Mapped[int] = mapped_column(ForeignKey("song.id_song"))
+    genre: Mapped[int] = relationship(back_populates="songs")
 
 class Collaboration(Base):
     __tablename__ = "collaboration"
 
     id_collaboration: Mapped[int] = mapped_column(primary_key=True)
-    song: Mapped[Song] = relationship(back_populates="collaborations")
+    song_id: Mapped[int] = mapped_column(ForeignKey("song.id_song"))
+    song: Mapped[Song] = relationship(back_populates="collaborations", single_parent=True)
     artists: Mapped[List[Artist]] = relationship(back_populates="collaboration", secondary="collaboration_artists")
 
 collaboration_artists = Table(
@@ -90,10 +96,3 @@ collaboration_artists = Table(
     Column("id_collaboration", ForeignKey("collaboration.id_collaboration"), primary_key=True, index=True),
     Column("id_artist", ForeignKey("artist.id_artist"), primary_key=True, index=True)
 )
-try:
-    print("Initializing Database...")
-    engine = create_engine(settings.DATABASE_URL, echo="debug")
-    Base.metadata.create_all(bind=engine)
-    print("Database Initializing Successful...")
-except:
-    print("Error occured")
