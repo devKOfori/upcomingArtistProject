@@ -11,16 +11,26 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-
-class Base(DeclarativeBase):
-    pass
+from database import Base
 
 class SocialMedia(Base):
+    __tablename__ = "social_media"
+
+    id_social_media: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str]
+    url: Mapped[str] | None
+    icon_path: Mapped[str] | None
+    owner: Mapped[List[str]] | None
+    social_handles: Mapped[List["SocialHandle"] | None] = relationship(back_populates="social_media")
+
+
+
+class SocialHandle(Base):
     __tablename__ = "socialmedia"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    url: Mapped[str]
+    id_social_handle: Mapped[int] = mapped_column(primary_key=True)
+    social_media_id: Mapped[int] = mapped_column(ForeignKey("social_media.id_social_media"))
+    url: Mapped[str] | None
     artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
     artist: Mapped["Artist"] = relationship(back_populates="socialmedia")
 
