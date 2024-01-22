@@ -13,7 +13,7 @@ SessionLocal = ""
 try:
     print("Initializing Database...")
     engine = create_engine(settings.DATABASE_URL, echo="debug")
-    engine.connect()
+    connection = engine.connect()
     print("Connected to database")
     # Base.metadata.create_all(bind=engine)
     # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
