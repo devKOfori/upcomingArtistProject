@@ -1,38 +1,43 @@
 from datetime import date
-from typing import List
 from sqlalchemy import Table
 from sqlalchemy import Column
 from sqlalchemy import String
+from sqlalchemy import Integer
+from sqlalchemy import Boolean
 from sqlalchemy import Text
 from sqlalchemy import Date
 from sqlalchemy import ForeignKey
+from typing import Optional, List
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-from database import Base
+from data import database
+
+class Base(DeclarativeBase):
+    pass
 
 class SocialMedia(Base):
     __tablename__ = "social_media"
 
     id_social_media: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str]
-    url: Mapped[str] | None
-    icon_path: Mapped[str] | None
-    owner: Mapped[List[str]] | None
-    social_handles: Mapped[List["SocialHandle"] | None] = relationship(back_populates="social_media")
-
+    name: Mapped[str] = mapped_column(String(255))
+    url: Mapped[Optional[str]]
+    icon_path: Mapped[Optional[str]]
+    # owner: Mapped[Optional[List[str]]]
+    social_handles: Mapped[Optional[List["SocialHandle"]]] = relationship(back_populates="social_media")
 
 
 class SocialHandle(Base):
-    __tablename__ = "socialmedia"
+    __tablename__ = "social_handle"
 
     id_social_handle: Mapped[int] = mapped_column(primary_key=True)
     social_media_id: Mapped[int] = mapped_column(ForeignKey("social_media.id_social_media"))
-    url: Mapped[str] | None
+    social_media: Mapped[SocialMedia] = relationship(back_populates="social_handles")
+    url: Mapped[Optional[str]]
     artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
-    artist: Mapped["Artist"] = relationship(back_populates="socialmedia")
+    artist: Mapped["Artist"] = relationship(back_populates="social_handles")
 
 class Gender(Base):
     __tablename__ = "gender"
@@ -44,7 +49,7 @@ class Gender(Base):
 class Artist(Base):
     __tablename__ = "artist"
 
-    id_artist: Mapped[int] = mapped_column(primary_key=True)
+    id_artist: Mapped[int] = mapped_column(primary_key=True, index=True)
     full_name: Mapped[str]
     stage_name: Mapped[str]
     gender_id: Mapped[int] = mapped_column(ForeignKey("gender.id_gender"))
@@ -52,9 +57,9 @@ class Artist(Base):
     email_address: Mapped[str | None]
     phone: Mapped[str | None]
     biography: Mapped[str] = mapped_column(Text, deferred=True)
-    social_media: Mapped[List[SocialMedia]] = relationship(back_populates="artists")
+    social_handles: Mapped[List["SocialHandle"]] = relationship(back_populates="artist")
     songs: Mapped[List["Song"]] = relationship(back_populates="artist")
-    collaboration: Mapped["Collaboration"] = relationship(back_populates="artists", secondary="CollaborationArtists")
+    collaboration: Mapped["Collaboration"] = relationship(back_populates="artists", secondary="collaboration_artists")
 
 class Album(Base):
     __tablename__ = "album"
@@ -81,6 +86,7 @@ class Song(Base):
     __tablename__ = "song"
 
     id_song: Mapped[int] = mapped_column(primary_key=True)
+    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
     artist: Mapped[Artist]  = relationship(back_populates="songs")
     title: Mapped[str] = mapped_column(String(255))
     release_date: Mapped[date | None] = mapped_column(Date)
@@ -89,7 +95,7 @@ class Song(Base):
     songtype_id: Mapped[int] = mapped_column(ForeignKey("songtype.id_song_type"))
     songtype: Mapped[SongType| None] = relationship(back_populates="songs")
     collaboration: Mapped["Collaboration"] = relationship(back_populates="song")
-    genre_id: Mapped[int] = mapped_column(ForeignKey("song.id_song"))
+    genre_id: Mapped[int] = mapped_column(ForeignKey("genre.id_genre"))
     genre: Mapped[int] = relationship(back_populates="songs")
 
 class Collaboration(Base):
