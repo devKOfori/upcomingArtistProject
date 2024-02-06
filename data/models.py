@@ -27,9 +27,18 @@ class Genre(Base):
 
     genre_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    artists: Optional[List["Artist"]] = relationship(back_populates="genres")
-    songs: Optional[List["Song"]] = relationship(back_populates="genre")
-    albums: Optional[List["Album"]] = relationship(back_populates="genre")
+    artists: Mapped[Optional[List["Artist"]]] = relationship(back_populates="genres")
+    songs: Mapped[Optional[List["Song"]]] = relationship(back_populates="genre")
+    albums: Mapped[Optional[List["Album"]]] = relationship(back_populates="genre")
+
+# class Genre(Base):
+#     __tablename__ = "genre"
+
+#     genre_id: Mapped[int] = mapped_column(primary_key=True)
+#     name: Mapped[str]
+#     artists: Mapped[List["Artist"]] = relationship(back_populates="genres")
+#     songs: Mapped[List["Song"]] = relationship(back_populates="genre")
+#     albums: Mapped[List["Album"]] = relationship(back_populates="genre")
 
 class Artist(Base):
     __tablename__ = "artist"
@@ -43,11 +52,11 @@ class Artist(Base):
     phone_number: Mapped[str]
     biography: Mapped[str]
     social_media_handles: Mapped[List["SocialMediaHandle"]] = relationship(back_populates="artist")
-    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
-    genres: Optional[List[Genre]] = relationship(back_populates="artists")
-    songs: Optional[List["Song"]] = relationship(back_populates="artist")
-    albums: Optional[List["Album"]] = relationship(back_populates="artist")
-    collaborations: Optional[List["Collaboration"]] = relationship(back_populates="artists", secondary="artist_collaboration")
+    genre_id: Mapped[Optional[int]] = mapped_column(ForeignKey("genre.genre_id"))
+    genres: Mapped[Optional[List[Genre]]] = relationship(back_populates="artists")
+    songs: Mapped[Optional[List["Song"]]] = relationship(back_populates="artist")
+    albums: Mapped[Optional[List["Album"]]] = relationship(back_populates="artist")
+    collaborations: Mapped[Optional[List["Collaboration"]]] = relationship(back_populates="artists", secondary="artist_collaboration")
 
 class Song(Base):
     __tablename__ = "song"
@@ -56,11 +65,11 @@ class Song(Base):
     title: Mapped[str]
     artist_id = mapped_column(ForeignKey("artist.artist_id"))
     artist: Mapped[Artist] = relationship(back_populates="songs")
-    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
-    genre: Optional[Genre] = relationship(back_populates="songs")
-    release_date: Mapped[Date] 
-    duration: Optional[float]
-    collaboration: Optional["Collaboration"] = relationship(back_populates="song")
+    genre_id: Mapped[Optional[int]] = mapped_column(ForeignKey("genre.genre_id"))
+    genre: Mapped[Optional[Genre]] = relationship(back_populates="songs")
+    release_date: Mapped[date] 
+    duration: Mapped[Optional[float]]
+    collaboration: Mapped[Optional["Collaboration"]] = relationship(back_populates="song")
 
 class Album(Base):
     __tablename__ = "album"
@@ -69,9 +78,9 @@ class Album(Base):
     title: Mapped[str]
     artist_id = mapped_column(ForeignKey("artist.artist_id"))
     artist: Mapped[Artist] = relationship(back_populates="albums")
-    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
-    genre: Optional[Genre] = relationship(back_populates="albums")
-    release_date: Mapped[Date]
+    genre_id: Mapped[Optional[int]] = mapped_column(ForeignKey("genre.genre_id"))
+    genre: Mapped[Optional[Genre]] = relationship(back_populates="albums")
+    release_date: Mapped[date]
 
 
 class SocialMediaPlatform(Base):

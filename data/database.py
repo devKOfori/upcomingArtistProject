@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import DeclarativeBase
 import settings
 from models import Base
 
@@ -12,7 +11,7 @@ SessionLocal = None
 try:
     print("Initializing Database...")
     engine = create_engine(settings.DATABASE_URL, echo=True)
-    Base.metadata.drop_all(bind=engine, checkfirst=False)
+    Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     # print(SessionLocal)
     print("Initializing Database Completed...")
