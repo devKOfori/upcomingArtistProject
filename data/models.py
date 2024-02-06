@@ -2,8 +2,6 @@ from datetime import date
 from sqlalchemy import Table
 from sqlalchemy import Column
 from sqlalchemy import String
-from sqlalchemy import Integer
-from sqlalchemy import Boolean
 from sqlalchemy import Text
 from sqlalchemy import Date
 from sqlalchemy import ForeignKey
@@ -13,102 +11,98 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-from data import database
 
 class Base(DeclarativeBase):
     pass
 
-class SocialMedia(Base):
-    __tablename__ = "social_media"
-
-    id_social_media: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255))
-    url: Mapped[Optional[str]]
-    icon_path: Mapped[Optional[str]]
-    # owner: Mapped[Optional[List[str]]]
-    social_handles: Mapped[Optional[List["SocialHandle"]]] = relationship(back_populates="social_media")
-
-
-class SocialHandle(Base):
-    __tablename__ = "social_handle"
-
-    id_social_handle: Mapped[int] = mapped_column(primary_key=True)
-    social_media_id: Mapped[int] = mapped_column(ForeignKey("social_media.id_social_media"))
-    social_media: Mapped[SocialMedia] = relationship(back_populates="social_handles")
-    url: Mapped[Optional[str]]
-    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
-    artist: Mapped["Artist"] = relationship(back_populates="social_handles")
-
 class Gender(Base):
     __tablename__ = "gender"
 
-    id_gender: Mapped[int] = mapped_column(primary_key=True)
+    gender_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     artists: Mapped[List["Artist"]] = relationship(back_populates="gender")
-
-class Artist(Base):
-    __tablename__ = "artist"
-
-    id_artist: Mapped[int] = mapped_column(primary_key=True, index=True)
-    full_name: Mapped[str]
-    stage_name: Mapped[str]
-    gender_id: Mapped[int] = mapped_column(ForeignKey("gender.id_gender"))
-    gender: Mapped[Gender] = relationship(back_populates="artists")
-    email_address: Mapped[str | None]
-    phone: Mapped[str | None]
-    biography: Mapped[str] = mapped_column(Text, deferred=True)
-    social_handles: Mapped[List["SocialHandle"]] = relationship(back_populates="artist")
-    songs: Mapped[List["Song"]] = relationship(back_populates="artist")
-    collaboration: Mapped["Collaboration"] = relationship(back_populates="artists", secondary="collaboration_artists")
-
-class Album(Base):
-    __tablename__ = "album"
-
-    id_album: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    songs: Mapped[List["Song"]] = relationship(back_populates="album")
 
 class Genre(Base):
     __tablename__ = "genre"
 
-    id_genre: Mapped[int] = mapped_column(primary_key=True)
+    genre_id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    songs: Mapped[List["Song"] | None] = relationship(back_populates="genre")
+    artists: Optional[List["Artist"]] = relationship(back_populates="genres")
+    songs: Optional[List["Song"]] = relationship(back_populates="genre")
+    albums: Optional[List["Album"]] = relationship(back_populates="genre")
 
-class SongType(Base):
-    __tablename__ = "songtype"
+class Artist(Base):
+    __tablename__ = "artist"
 
-    id_song_type: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str]
-    songs: Mapped[List["Song"]] = relationship(back_populates="songtype")
+    artist_id: Mapped[int] = mapped_column(primary_key=True)
+    full_name: Mapped[str]
+    stage_name: Mapped[str]
+    gender_id = mapped_column(ForeignKey("gender.gender_id"))
+    gender: Mapped[Gender] = relationship(back_populates="artists")
+    email: Mapped[str]
+    phone_number: Mapped[str]
+    biography: Mapped[str]
+    social_media_handles: Mapped[List["SocialMediaHandle"]] = relationship(back_populates="artist")
+    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
+    genres: Optional[List[Genre]] = relationship(back_populates="artists")
+    songs: Optional[List["Song"]] = relationship(back_populates="artist")
+    albums: Optional[List["Album"]] = relationship(back_populates="artist")
+    collaborations: Optional[List["Collaboration"]] = relationship(back_populates="artists", secondary="artist_collaboration")
 
 class Song(Base):
     __tablename__ = "song"
 
-    id_song: Mapped[int] = mapped_column(primary_key=True)
-    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id_artist"))
-    artist: Mapped[Artist]  = relationship(back_populates="songs")
-    title: Mapped[str] = mapped_column(String(255))
-    release_date: Mapped[date | None] = mapped_column(Date)
-    album_id: Mapped[int] = mapped_column(ForeignKey("album.id_album"))
-    album: Mapped[Album | None] = relationship(back_populates="songs")
-    songtype_id: Mapped[int] = mapped_column(ForeignKey("songtype.id_song_type"))
-    songtype: Mapped[SongType| None] = relationship(back_populates="songs")
-    collaboration: Mapped["Collaboration"] = relationship(back_populates="song")
-    genre_id: Mapped[int] = mapped_column(ForeignKey("genre.id_genre"))
-    genre: Mapped[int] = relationship(back_populates="songs")
+    song_id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    artist_id = mapped_column(ForeignKey("artist.artist_id"))
+    artist: Mapped[Artist] = relationship(back_populates="songs")
+    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
+    genre: Optional[Genre] = relationship(back_populates="songs")
+    release_date: Mapped[Date] 
+    duration: Optional[float]
+    collaboration: Optional["Collaboration"] = relationship(back_populates="song")
+
+class Album(Base):
+    __tablename__ = "album"
+
+    album_id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    artist_id = mapped_column(ForeignKey("artist.artist_id"))
+    artist: Mapped[Artist] = relationship(back_populates="albums")
+    genre_id: Optional[int] = mapped_column(ForeignKey("genre.genre_id"))
+    genre: Optional[Genre] = relationship(back_populates="albums")
+    release_date: Mapped[Date]
+
+
+class SocialMediaPlatform(Base):
+    __tablename__ = "socialmediaplatform"
+
+    social_media_platform_id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    social_media_handles: Mapped[List["SocialMediaHandle"]] = relationship(back_populates="platform")
+
+class SocialMediaHandle(Base):
+    __tablename__ = "socialmediahandle"
+
+    social_media_handle_id: Mapped[int] = mapped_column(primary_key=True)
+    artist_id = mapped_column(ForeignKey("artist.artist_id"))
+    artist: Mapped[Artist] = relationship(back_populates="social_media_handles")
+    platform_id = mapped_column(ForeignKey("socialmediaplatform.social_media_platform_id"))
+    platform: Mapped[SocialMediaPlatform] = relationship(back_populates="social_media_handles")
+    handle: Mapped[str]
 
 class Collaboration(Base):
     __tablename__ = "collaboration"
 
-    id_collaboration: Mapped[int] = mapped_column(primary_key=True)
-    song_id: Mapped[int] = mapped_column(ForeignKey("song.id_song"))
-    song: Mapped[Song] = relationship(back_populates="collaborations", single_parent=True)
-    artists: Mapped[List[Artist]] = relationship(back_populates="collaboration", secondary="collaboration_artists")
+    collaboration_id: Mapped[int] = mapped_column(primary_key=True)
+    song_id = mapped_column(ForeignKey("song.song_id"), unique=True)
+    song: Mapped[Song] = relationship(back_populates="collaboration")
+    artists: Mapped[List[Artist]] = relationship(back_populates="collaborations", secondary="artist_collaboration")
 
-collaboration_artists = Table(
-    "collaboration_artists",
-    Base.metadata, 
-    Column("id_collaboration", ForeignKey("collaboration.id_collaboration"), primary_key=True, index=True),
-    Column("id_artist", ForeignKey("artist.id_artist"), primary_key=True, index=True)
+
+artist_collaboration = Table(
+    "artistcollaborations",
+    Base.metadata,
+    Column("artist_id", ForeignKey("artist.artist_id"), primary_key=True),
+    Column("collaboration_id", ForeignKey("collaboration.collaboration_id"), primary_key=True)
 )
