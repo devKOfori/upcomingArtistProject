@@ -1,22 +1,23 @@
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import DeclarativeBase
-from data import settings
+
+import os
+from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-class Base(DeclarativeBase):
-    pass
 
-SessionLocal = ""
-try:
-    print("Initializing Database...")
-    engine = create_engine(settings.DATABASE_URL, echo="debug")
-    connection = engine.connect()
-    print("Connected to database")
-    # Base.metadata.create_all(bind=engine)
-    # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    # print("Initializing Database Completed...")
-except:
-    print("An error occured while connecting to the database")
+db_username = os.getenv('DATABASE_USER')
+db_password = os.getenv('DATABASE_PASSWORD')
+db_host = os.getenv('DATABASE_HOST')
+db_port = os.getenv('DATABASE_PORT')
+db_name = os.getenv('DATABASE_NAME')
+
+DATABASE_URL = f'postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}'
+
+engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()

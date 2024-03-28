@@ -9,5 +9,6 @@ db_password = os.getenv('DATABASE_PASSWORD')
 db_host = os.getenv('DATABASE_HOST')
 db_port = os.getenv('DATABASE_PORT')
 db_name = os.getenv('DATABASE_NAME')
+# db_name = "db_artistAPIs"
 
 DATABASE_URL = f'postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}'
