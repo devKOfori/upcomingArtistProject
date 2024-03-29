@@ -17,13 +17,13 @@ class Artist(ArtistCreate):
         
 class SongBase(BaseModel):
     title: str
-    artist: Artist
+    producer: str
 
 class SongCreate(SongBase):
-    producer: str
     release_date: date
 
 class Song(SongCreate):
+    artist: Artist
     
     class Config:
         orm_mode = True

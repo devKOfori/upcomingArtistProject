@@ -27,3 +27,13 @@ def update_artist_record(db: Session, artist_id: int, artist: schemas.Artist):
     db.commit()
     db.refresh(db_artist)
     return db_artist
+
+def add_new_song(db: Session, artist_id: int, song: schemas.SongCreate):
+    artist = db.query(models.Artist).filter(models.Artist.id==artist_id).first()
+    if artist is None:
+        raise HTTPException(status_code=404, detail="No artist found")
+    new_song = models.Song(**song.dict(), artist_id=artist_id)
+    db.add(new_song)
+    db.commit()
+    db.refresh(new_song)
+    return new_song
