@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 import models, schemas
 
 def create_artist(db: Session, artist: schemas.ArtistCreate):
@@ -13,3 +14,16 @@ def get_artist(db: Session, artist_id: int):
 
 def get_artist_by_email(db: Session, email: str):
     return db.query(models.Artist).filter(models.Artist.email==email).first()
+
+def get_all_artists(db: Session):
+    return db.query(models.Artist)
+
+def update_artist_record(db: Session, artist_id: int, artist: schemas.Artist):
+    db_artist = db.query(models.Artist).filter(models.Artist.id==artist_id).first()
+    if db_artist is None:
+        raise HTTPException(status_code=404, detail="Artist does not exist")
+    for key, value in artist.dict().items():
+        setattr(db_artist, key, value)
+    db.commit()
+    db.refresh(db_artist)
+    return db_artist
