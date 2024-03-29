@@ -51,3 +51,13 @@ async def delete_artist_record(artist_id: int, db: Session = Depends(get_db)):
 async def add_new_song(artist_id: int, song: schemas.SongCreate, db: Session = Depends(get_db)):
     new_song = crud.add_new_song(db, artist_id, song)
     return new_song
+
+@app.get("/artists/{artist_id}/songs", response_model=list[schemas.Song])
+async def get_songs_by_artist(artist_id: int, db: Session = Depends(get_db)):
+    artist_songs = crud.get_songs_by_artist(db, artist_id)
+    return artist_songs
+
+@app.get("/songs/all", response_model=list[schemas.Song])
+async def get_all_songs(db: Session = Depends(get_db)):
+    songs = crud.get_all_songs(db)
+    return songs
